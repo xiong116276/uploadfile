@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <title>FormData</title>
+    <style>
+        img{
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+<form name="form1" id="form1">
+    <p>photo:<input type="file" name="photo" id="photo" multiple></p>
+    <p><input type="button" name="b1" value="submit" onclick="fsubmit()"></p>
+</form>
+<div id="result"></div>
+<script src="js/jquery-3.1.1.js"></script>
+<script type="text/javascript">
+    function fsubmit() {
+//        获取当前form表单
+        var form=document.getElementById("form1");
+//        创建foemData
+        var formData=new FormData(form);
+        $.ajax({
+            url: "images/server.php",
+            type: "post",
+            data: formData,
+            processData: false,  // 告诉jQuery不要去处理发送的数据
+            contentType: false,   // 告诉jQuery不要去设置Content-Type请求头
+            success:function (data) {
+                var data = JSON.parse(data);
+                var result = '';
+                result += '<img id="img" src="images/' + data.photo + '" width="100px" alt=" ">';
+                $('#result').html(result);
+                console.log(data);
+            }
+        });
+    }
+    $("#result").on("click",'img',function () {
+        $(this).css("width","200px");
+    })
+    $("#result").on("dblclick",'img',function () {
+        $(this).css("width","400px");
+    })
+</script>
+</body>
+</html>

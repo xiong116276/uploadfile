@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <title>图片上传</title>
+    <style>
+        .headmask{
+            width:50px;
+            height: 50px;
+            position: relative;
+            overflow: hidden;
+            left:58px;
+        }
+        .headimg{
+            width:100%;
+            height:100%;
+            border-radius: 50%;
+        }
+        .input{
+            position: absolute;
+            display: block;
+            top:0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        #submit{
+            width:10rem;
+            line-height: 2rem;
+            text-align: center;
+            height:2rem;
+            border:1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+<br>
+<form name="fileinfo" id="form">
+    <div class="headmask">
+        <img class="headimg" src="images/head_pic@2x.png" alt="">
+        <input type="file" name="photo" id="photo" class="input" title="点击改变头像">
+    </div>
+    <input id="submit" type="button" name="bl" onclick="fsubmit()" value="提交">
+</form>
+
+<script src="js/jquery-3.1.1.js"></script>
+<script>
+//    预览上传图片
+    $("#photo").on("change",function () {
+            var fil = this.files;
+            // 创建FileReader
+            var reader = new FileReader;
+            reader.readAsDataURL(fil[0]);
+            reader.onload= function () {
+                $(".headimg").attr("src",reader.result);
+            }
+    });
+//    设置图片
+    window.onload=function () {
+        $.ajax({
+            url: "data/headImgSet.php",
+            type: "get",
+            processData: false,  // 告诉jQuery不要去处理发送的数据
+            contentType: false,   // 告诉jQuery不要去设置Content-Type请求头
+            success:function (data) {
+                if(data.msg.src==null){
+                    data.msg.src="images/head_pic@2x.png";
+                }
+                $(".headimg").attr("src",data.msg.src);
+            }
+        });
+    }
+//    上传图片
+    function fsubmit() {
+//        获取当前form表单
+        var form=document.getElementById("form");
+//        创建foemData
+        var formData=new FormData(form);
+        $.ajax({
+            url: "data/headImgUp.php",
+            type: "post",
+            data: formData,
+            processData: false,  // 告诉jQuery不要去处理发送的数据
+            contentType: false,   // 告诉jQuery不要去设置Content-Type请求头
+            success:function (data) {
+                alert(data.msg);
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
