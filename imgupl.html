@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"/>
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <title>图片上传</title>
+    <style>
+        .after:after{
+            content: "";
+            display: block;
+            clear: both;
+        }
+        .headmask{
+            width:50px;
+            height: 50px;
+            position: relative;
+            overflow: hidden;
+            left:58px;
+        }
+        .headimg{
+            width:100%;
+            height:100%;
+        }
+        .input{
+            position: absolute;
+            display: block;
+            top:0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        #submit{
+            width:10rem;
+            line-height: 2rem;
+            text-align: center;
+            height:2rem;
+            border:1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        .image{
+            float: left;
+            width:100px;
+            margin: 10px 10px 0 0;
+        }
+
+    </style>
+</head>
+<body>
+<br>
+<form enctype="multipart/form-data" method="post" name="fileinfo">
+    <div class="headmask">
+        <img class="headimg" src="images/head_pic@2x.png" alt="">
+        <input type="file" id="filetest" multiple class="input" title="点击改变头像">
+    </div>
+    <div id="submit">提交</div>
+</form>
+<div id="imgShow" class="after">
+
+</div>
+<br>
+
+<script src="js/jquery-3.1.1.js"></script>
+<script>
+    $('#filetest').change(function(){
+        var file=this.files[0];
+
+        var reader=new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload=function(){
+            // 通过 reader.result 来访问生成的 DataURL
+            var url=reader.result;
+            $(".headimg").attr("src",reader.result);
+        };
+    });
+    $("#submit").on("click",function (e) {
+        var img = $(".headimg")[0];
+        // 用canvas先描绘图片
+        var canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height =img.height;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        var data = canvas.toDataURL();
+        // dataURL 的格式为 “data:image/png;base64,****”,逗号之前都是一些说明性的文字，我们只需要逗号之后的就行了
+        data=data.split(',')[1];
+        // 再用 window.atob 转换成由二进制字符串
+        data=window.atob(data);
+
+        //window.atob 转换后的结果仍然是字符串，直接给 Blob 还是会出错。所以又要用 Uint8Array 转换一下。
+        var ia = new Uint8Array(data.length);
+        for (var i = 0; i < data.length; i++) {
+            ia[i] = data.charCodeAt(i);
+        };
+
+        // canvas.toDataURL 返回的默认格式就是 image/png
+        var blob=new Blob([ia], {type:"image/png"});
+        //  FormData 顾名思义，就是用来创建表单数据的
+        var fd=new FormData(document.forms.namedItem("fileinfo" ));
+        //用 append 以键值的形式将数据加入进去即可。但他最大的特点就是可以手工添加文件或者 Blob 类型的数据，Blob 数据也会被当作文件来处理。
+        fd.append('CustomField',blob);
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState===4){		//响应消息接收完成
+                if(xhr.status===200){	//响应完成且成功
+                    console.log("success");
+                }else{	//响应完成但有问题
+                    console.log("error");
+                }
+            }
+        }
+        //3 连接到服务器
+        xhr.open('post', 'data/server.php', true);
+        //4 发送请求消息
+        xhr.send(fd);
+//        $.ajax({
+//            url:"http://localhost:8008/upimg",
+//            type:"post",
+//            data:fd,
+//            success:function(data){
+//                console.log("success");
+//            }
+//        });
+    })
+</script>
+
+</body>
+</html>
